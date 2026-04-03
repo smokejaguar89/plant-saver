@@ -3,7 +3,7 @@ import random
 from app.models.domain.sparkfun_reading import SparkfunReading
 
 
-class Sparkfun:
+class SparkfunDriver:
     def __init__(self):
         # Initialize the Sparkfun sensor here (e.g., set up I2C communication)
         pass

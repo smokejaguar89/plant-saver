@@ -40,6 +40,5 @@ def test_load_homepage_renders_template_with_sensor_data(
         context={
             "sensor_data": sensor_snapshot,
             "time_series": [],
-            "data_points": [],
         },
     )

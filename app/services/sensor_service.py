@@ -2,18 +2,18 @@ from datetime import datetime, timezone
 
 from fastapi.params import Depends
 
-from app.hardware.bme280 import BME280
-from app.hardware.sparkfun import Sparkfun
-from app.hardware.tsl2591 import TSL2591
+from app.hardware.bme280_driver import BME280Driver
+from app.hardware.sparkfun_driver import SparkfunDriver
+from app.hardware.tsl2591_driver import TSL2591Driver
 from app.models.domain.sensor_snapshot import SensorSnapshot
 
 
 class SensorService:
     def __init__(
             self,
-            bme280=Depends(BME280),
-            tsl2591=Depends(TSL2591),
-            sparkfun=Depends(Sparkfun)):
+            bme280=Depends(BME280Driver),
+            tsl2591=Depends(TSL2591Driver),
+            sparkfun=Depends(SparkfunDriver)):
         self.bme280 = bme280
         self.tsl2591 = tsl2591
         self.sparkfun = sparkfun

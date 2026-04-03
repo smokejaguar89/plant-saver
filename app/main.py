@@ -4,9 +4,9 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
 from app.api import api, views
-from app.hardware.bme280 import BME280
-from app.hardware.sparkfun import Sparkfun
-from app.hardware.tsl2591 import TSL2591
+from app.hardware.bme280_driver import BME280Driver
+from app.hardware.sparkfun_driver import SparkfunDriver
+from app.hardware.tsl2591_driver import TSL2591Driver
 from app.services.database import Database
 from app.services.scheduler import Scheduler
 from app.services.sensor_service import SensorService
@@ -24,7 +24,9 @@ async def lifespan(app: FastAPI):
     database.init()
 
     # Initialise hardware and sensor service.
-    bme280, tsl2591, sparkfun = BME280(), TSL2591(), Sparkfun()
+    bme280 = BME280Driver()
+    tsl2591 = TSL2591Driver()
+    sparkfun = SparkfunDriver()
     sensor_service = SensorService(bme280, tsl2591, sparkfun)
 
     # Initialise scheduler to collect sensor data every minute

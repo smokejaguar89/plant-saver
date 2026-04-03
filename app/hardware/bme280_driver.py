@@ -3,7 +3,7 @@ import random
 from app.models.domain.bme280_reading import BME280Reading
 
 
-class BME280:
+class BME280Driver:
     def __init__(self):
         # Initialize the BME280 sensor here (e.g., set up I2C communication)
         pass

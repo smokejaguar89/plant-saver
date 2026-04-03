@@ -1,12 +1,12 @@
 from unittest.mock import patch
 
-from app.hardware.sparkfun import Sparkfun
+from app.hardware.sparkfun_driver import SparkfunDriver
 from app.models.domain.sparkfun_reading import SparkfunReading
 
 
-@patch("app.hardware.sparkfun.random.uniform", return_value=22.7)
+@patch("app.hardware.sparkfun_driver.random.uniform", return_value=22.7)
 def test_get_reading_returns_sparkfun_reading(mock_uniform) -> None:
-    sensor = Sparkfun()
+    sensor = SparkfunDriver()
 
     reading = sensor.get_reading()
 

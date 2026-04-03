@@ -1,15 +1,15 @@
 from unittest.mock import call, patch
 
-from app.hardware.bme280 import BME280
+from app.hardware.bme280_driver import BME280Driver
 from app.models.domain.bme280_reading import BME280Reading
 
 
 @patch(
-    "app.hardware.bme280.random.uniform",
+    "app.hardware.bme280_driver.random.uniform",
     side_effect=[21.1, 45.2, 1001.3],
 )
 def test_get_reading_returns_bme280_reading(mock_uniform) -> None:
-    sensor = BME280()
+    sensor = BME280Driver()
 
     reading = sensor.get_reading()
 
