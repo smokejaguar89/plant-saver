@@ -11,6 +11,8 @@ from app.hardware.sparkfun_driver import SparkfunDriver
 from app.hardware.tsl2591_driver import TSL2591Driver
 from app.db.database import Database
 from app.scheduler.scheduler import Scheduler
+from app.clients.gemini_client import GeminiClient
+from app.services.image_generation_service import ImageGenerationService
 from app.services.sensor_service import SensorService
 
 load_dotenv(dotenv_path=Path(__file__).resolve().parents[1] / ".env")
@@ -32,9 +34,14 @@ async def lifespan(app: FastAPI):
     tsl2591 = TSL2591Driver()
     sparkfun = SparkfunDriver()
     sensor_service = SensorService(bme280, tsl2591, sparkfun)
+    gemini_client = GeminiClient()
+    image_generation_service = ImageGenerationService(
+        sensor_service=sensor_service,
+        image_client=gemini_client,
+    )
 
     # Initialise scheduler to collect sensor data every minute
-    scheduler = Scheduler(sensor_service, database)
+    scheduler = Scheduler(sensor_service, database, image_generation_service)
     scheduler.start()
     yield
     scheduler.stop()

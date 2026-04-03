@@ -6,7 +6,7 @@ from fastapi.templating import Jinja2Templates
 
 from app.models.domain.sensor_snapshot import SensorSnapshot
 from app.services.analytics_service import AnalyticsService
-from app.services.gemini_service import GeminiService, GeminiServiceError
+from app.services.image_generation_service import ImageGenerationService
 from app.services.sensor_service import SensorService
 
 # 1. Point to the templates directory
@@ -19,22 +19,16 @@ async def load_homepage(
         request: Request,
         sensor_service=Depends(SensorService),
         analytics_service=Depends(AnalyticsService),
-        # DELETE once we have a schedule set up
-        gemini_service=Depends(GeminiService)) -> HTMLResponse:
-    # Create a new image with gemini
+        image_generation_service=Depends(
+            ImageGenerationService)) -> HTMLResponse:
     generated_image_url = None
     generated_image_generated_at = None
-    try:
-        image_path = await gemini_service.get_or_generate_image(
-            max_age_minutes=30
-        )
+    image_path = image_generation_service.get_most_recent_image()
+    if image_path is not None:
         generated_image_url = f"/static/img/gemini/{image_path.name}"
         generated_image_generated_at = image_path.stem.replace(
             "sunflower_", "", 1
         )
-    except GeminiServiceError:
-        generated_image_url = None
-        generated_image_generated_at = None
 
     # Data you want to pass to your HTML
     sensor_snapshot = await sensor_service.get_snapshot()

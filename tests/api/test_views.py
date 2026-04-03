@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from app.api.views import load_homepage
 from app.models.domain.sensor_snapshot import SensorSnapshot
 from app.services.analytics_service import AnalyticsService
-from app.services.gemini_service import GeminiService, GeminiServiceError
+from app.services.image_generation_service import ImageGenerationService
 from app.services.sensor_service import SensorService
 
 
@@ -25,8 +25,8 @@ def test_load_homepage_renders_template_with_sensor_data(
     sensor_service.get_snapshot = AsyncMock(return_value=sensor_snapshot)
     analytics_service = MagicMock(spec=AnalyticsService)
     analytics_service.get_last_week_snapshots = AsyncMock(return_value=[])
-    gemini_service = MagicMock(spec=GeminiService)
-    gemini_service.get_or_generate_image = AsyncMock(
+    image_generation_service = MagicMock(spec=ImageGenerationService)
+    image_generation_service.get_most_recent_image = MagicMock(
         return_value=Path(
             "app/static/img/gemini/sunflower_2026-04-03:13:39.jpg"
         )
@@ -38,14 +38,12 @@ def test_load_homepage_renders_template_with_sensor_data(
             request=request,
             sensor_service=sensor_service,
             analytics_service=analytics_service,
-            gemini_service=gemini_service,
+            image_generation_service=image_generation_service,
         )
     )
 
     assert response == "rendered-page"
-    gemini_service.get_or_generate_image.assert_awaited_once_with(
-        max_age_minutes=30
-    )
+    image_generation_service.get_most_recent_image.assert_called_once_with()
     mock_templates.TemplateResponse.assert_called_once_with(
         request=request,
         name="homepage.html",
@@ -61,7 +59,7 @@ def test_load_homepage_renders_template_with_sensor_data(
 
 
 @patch("app.api.views.templates")
-def test_load_homepage_handles_gemini_failure(mock_templates) -> None:
+def test_load_homepage_handles_missing_gemini_image(mock_templates) -> None:
     request = MagicMock()
     sensor_snapshot = SensorSnapshot(
         temperature=23.4,
@@ -74,9 +72,9 @@ def test_load_homepage_handles_gemini_failure(mock_templates) -> None:
     sensor_service.get_snapshot = AsyncMock(return_value=sensor_snapshot)
     analytics_service = MagicMock(spec=AnalyticsService)
     analytics_service.get_last_week_snapshots = AsyncMock(return_value=[])
-    gemini_service = MagicMock(spec=GeminiService)
-    gemini_service.get_or_generate_image = AsyncMock(
-        side_effect=GeminiServiceError("Gemini API request failed.")
+    image_generation_service = MagicMock(spec=ImageGenerationService)
+    image_generation_service.get_most_recent_image = MagicMock(
+        return_value=None
     )
     mock_templates.TemplateResponse.return_value = "rendered-page"
 
@@ -85,11 +83,12 @@ def test_load_homepage_handles_gemini_failure(mock_templates) -> None:
             request=request,
             sensor_service=sensor_service,
             analytics_service=analytics_service,
-            gemini_service=gemini_service,
+            image_generation_service=image_generation_service,
         )
     )
 
     assert response == "rendered-page"
+    image_generation_service.get_most_recent_image.assert_called_once_with()
     mock_templates.TemplateResponse.assert_called_once_with(
         request=request,
         name="homepage.html",

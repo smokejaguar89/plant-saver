@@ -10,9 +10,11 @@ def test_collect_data_job_gets_and_saves_snapshot() -> None:
     sensor_service.get_snapshot = AsyncMock(return_value=snapshot)
     database = MagicMock()
     database.save_snapshot = AsyncMock()
+    image_generation_service = MagicMock()
     scheduler_service = Scheduler(
         sensor_service=sensor_service,
         database=database,
+        image_generation_service=image_generation_service,
     )
 
     asyncio.run(scheduler_service._collect_data_job())
@@ -27,18 +29,24 @@ def test_start_adds_job_and_starts_scheduler(
     add_job,
     start,
 ) -> None:
+    image_generation_service = MagicMock()
     scheduler_service = Scheduler(
         sensor_service=MagicMock(),
         database=MagicMock(),
+        image_generation_service=image_generation_service,
     )
 
     scheduler_service.start()
 
-    add_job.assert_called_once()
-    args, kwargs = add_job.call_args
-    assert args[0] == scheduler_service._run_collect_data_job
-    assert args[1] == "interval"
-    assert kwargs["minutes"] == 1
+    assert add_job.call_count == 2
+    first_args, first_kwargs = add_job.call_args_list[0]
+    assert first_args[0] == scheduler_service._run_collect_data_job
+    assert first_args[1] == "interval"
+    assert first_kwargs["minutes"] == 1
+    second_args, second_kwargs = add_job.call_args_list[1]
+    assert second_args[0] == scheduler_service._run_generate_image_job
+    assert second_args[1] == "interval"
+    assert second_kwargs["hours"] == 6
     start.assert_called_once()
 
 
@@ -47,8 +55,23 @@ def test_stop_shuts_down_scheduler(shutdown) -> None:
     scheduler_service = Scheduler(
         sensor_service=MagicMock(),
         database=MagicMock(),
+        image_generation_service=MagicMock(),
     )
 
     scheduler_service.stop()
 
     shutdown.assert_called_once()
+
+
+def test_generate_image_job_always_generates_image() -> None:
+    image_generation_service = MagicMock()
+    image_generation_service.generate_and_save_image = AsyncMock()
+    scheduler_service = Scheduler(
+        sensor_service=MagicMock(),
+        database=MagicMock(),
+        image_generation_service=image_generation_service,
+    )
+
+    asyncio.run(scheduler_service._generate_image_job())
+
+    image_generation_service.generate_and_save_image.assert_awaited_once_with()
