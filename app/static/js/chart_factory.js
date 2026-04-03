@@ -1,25 +1,15 @@
-/**
- * @param {CanvasRenderingContext2D} ctx - The 2D rendering context for the HTML <canvas> element.
- * @param {string} label - The name of the dataset (e.g., "Moisture").
- * @param {Array} labels - The X-axis time labels.
- * @param {Array} data - The sensor values.
- * @param {number} threshold - The "Health" value (below this is Red).
- * @param {string} unit - The unit for the tooltip (e.g., "%", "°C").
- */
-class ChartInitData {
-    constructor(ctx, title, labels, data, threshold, unit) {
-        this.ctx = ctx;
-        this.label = title;
-        this.labels = labels;
-        this.data = data;
+class ChartConfig {
+    constructor(id, label, dataKey, threshold, unit) {
+        this.id = id;
+        this.label = label;
+        this.dataKey = dataKey;
         this.threshold = threshold;
         this.unit = unit;
     }
 }
 
 class ChartFactory {
-    createHealthChart(initData) {
-        const { ctx, label, labels, data, threshold, unit } = initData;
+    createHealthChart(ctx, label, labels, data, threshold, unit) {
         // Helper to build the dynamic "Red-Below-Threshold" gradient
         const getGradient = (context) => {
             const chart = context.chart;
