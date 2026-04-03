@@ -47,7 +47,7 @@ def test_generate_and_save_image_writes_expected_jpg_name(tmp_path) -> None:
     )
 
 
-def test_get_most_recent_image_returns_recent_image(tmp_path) -> None:
+def test_find_most_recent_image_file_returns_recent_image(tmp_path) -> None:
     service = ImageGenerationService(
         sensor_service=MagicMock(),
         image_client=MagicMock(),
@@ -57,12 +57,12 @@ def test_get_most_recent_image_returns_recent_image(tmp_path) -> None:
     recent_image = tmp_path / "sunflower_2026-04-03:13:39.jpg"
     recent_image.write_bytes(b"existing")
 
-    output_path = service.get_most_recent_image()
+    output_path = service._find_most_recent_image_file()
 
     assert output_path == recent_image
 
 
-def test_get_most_recent_image_returns_latest_image(tmp_path) -> None:
+def test_find_most_recent_image_file_returns_latest_image(tmp_path) -> None:
     service = ImageGenerationService(
         sensor_service=MagicMock(),
         image_client=MagicMock(),
@@ -74,7 +74,7 @@ def test_get_most_recent_image_returns_latest_image(tmp_path) -> None:
     latest_image = tmp_path / "sunflower_2026-04-03:13:39.jpg"
     latest_image.write_bytes(b"new")
 
-    output_path = service.get_most_recent_image()
+    output_path = service._find_most_recent_image_file()
 
     assert output_path == latest_image
 
@@ -98,6 +98,49 @@ def test_craft_image_prompt_reflects_sensor_state() -> None:
     assert "soil well hydrated" in prompt
     assert "strong daylight" in prompt
     assert "warm, comfortable atmosphere" in prompt
+
+
+def test_craft_image_prompt_skips_easter_egg_when_gate_is_false() -> None:
+    snapshot = SensorSnapshot(
+        temperature=26.0,
+        humidity=45.0,
+        light=50.0,
+        moisture=40.0,
+        pressure=1008.0,
+    )
+    service = ImageGenerationService(
+        sensor_service=MagicMock(),
+        image_client=MagicMock(),
+        database=MagicMock(),
+    )
+    service._should_include_easter_egg = MagicMock(return_value=False)
+    service._get_easter_egg_prompt = MagicMock(return_value="EASTER")
+
+    _ = service._craft_image_prompt(snapshot)
+
+    service._get_easter_egg_prompt.assert_not_called()
+
+
+def test_craft_image_prompt_calls_easter_egg_when_gate_is_true() -> None:
+    snapshot = SensorSnapshot(
+        temperature=26.0,
+        humidity=45.0,
+        light=50.0,
+        moisture=40.0,
+        pressure=1008.0,
+    )
+    service = ImageGenerationService(
+        sensor_service=MagicMock(),
+        image_client=MagicMock(),
+        database=MagicMock(),
+    )
+    service._should_include_easter_egg = MagicMock(return_value=True)
+    service._get_easter_egg_prompt = MagicMock(return_value="EASTER")
+
+    prompt = service._craft_image_prompt(snapshot)
+
+    service._get_easter_egg_prompt.assert_called_once_with()
+    assert "EASTER" in prompt
 
 
 def test_get_latest_generated_image_falls_back_to_file(tmp_path) -> None:

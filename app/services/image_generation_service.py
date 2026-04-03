@@ -1,3 +1,4 @@
+import random
 from datetime import datetime
 from pathlib import Path
 from typing import Protocol
@@ -69,7 +70,7 @@ class ImageGenerationService:
         if generated_image is not None:
             return generated_image
 
-        image_path = self.get_most_recent_image()
+        image_path = self._find_most_recent_image_file()
         if image_path is None:
             return None
 
@@ -78,7 +79,7 @@ class ImageGenerationService:
             generated_at=datetime.fromtimestamp(image_path.stat().st_mtime),
         )
 
-    def get_most_recent_image(self) -> Path | None:
+    def _find_most_recent_image_file(self) -> Path | None:
         if not self.generated_image_dir.exists():
             return None
 
@@ -96,27 +97,50 @@ class ImageGenerationService:
             )
         ]
 
-        prompt.append("#1:")
-        if snapshot.moisture < MOISTURE_THRESHOLD:
-            prompt.append("Make the sunflower wilt and the soil appear dry.")
-        else:
-            prompt.append(
-                "Keep the sunflower healthy and the soil well hydrated."
-            )
+        prompt.append("#1:" + self._build_moisture_prompt(snapshot))
+        prompt.append("#2:" + self._build_light_prompt(snapshot))
+        prompt.append("#3:" + self._build_temperature_prompt(snapshot))
 
-        prompt.append("#2:")
-        if snapshot.light < LIGHT_THRESHOLD:
-            prompt.append("Dim the scene to suggest a dark room.")
-        else:
-            prompt.append("Brighten the scene to suggest strong daylight.")
-
-        prompt.append("#3:")
-        if snapshot.temperature < TEMPERATURE_THRESHOLD:
-            prompt.append("Add a cool, chilly atmosphere to the image.")
-        else:
-            prompt.append("Add a warm, comfortable atmosphere to the image.")
+        if self._should_include_easter_egg():
+            prompt.append(self._get_easter_egg_prompt())
+        prompt.append(self._maybe_get_special_event_prompt())
 
         return " ".join(prompt)
+
+    def _should_include_easter_egg(self) -> bool:
+        return random.random() < 0.25
+
+    def _get_easter_egg_prompt(self) -> str:
+        return ""
+
+    def _maybe_get_special_event_prompt(self) -> str:
+        month, day = datetime.now().month, datetime.now().day
+        if month == 9 and day == 11:
+            # TODO: something for Clara's birthday
+            return ""
+        if month == 8 and day == 22:
+            # TODO: something for my birthday
+            return ""
+        # Add some more logic for... anniversary? christmas? easter?
+        return ""
+
+    def _build_moisture_prompt(self, snapshot: SensorSnapshot) -> str:
+        if snapshot.moisture < MOISTURE_THRESHOLD:
+            return "Make the sunflower wilt and the soil appear dry."
+
+        return "Keep the sunflower healthy and the soil well hydrated."
+
+    def _build_light_prompt(self, snapshot: SensorSnapshot) -> str:
+        if snapshot.light < LIGHT_THRESHOLD:
+            return "Dim the scene to suggest a dark room."
+
+        return "Brighten the scene to suggest strong daylight."
+
+    def _build_temperature_prompt(self, snapshot: SensorSnapshot) -> str:
+        if snapshot.temperature < TEMPERATURE_THRESHOLD:
+            return "Add a cool, chilly atmosphere to the image."
+
+        return "Add a warm, comfortable atmosphere to the image."
 
     def _read_base_image_bytes(self) -> bytes:
         return self.base_image_path.read_bytes()
