@@ -1,7 +1,7 @@
 import asyncio
+from datetime import datetime
 from unittest.mock import ANY, AsyncMock, MagicMock
 
-from app.models.domain.generated_image import GeneratedImage
 from app.models.domain.sensor_snapshot import SensorSnapshot
 from app.services.image_generation_service import ImageGenerationService
 
@@ -26,8 +26,9 @@ def test_generate_and_save_image_writes_expected_jpg_name(tmp_path) -> None:
         database=database,
     )
     service.generated_image_dir = tmp_path
+    service.base_image_path = tmp_path / "sunflower_base.jpg"
+    service.base_image_path.write_bytes(b"base-image")
     service._craft_image_prompt = MagicMock(return_value="plant prompt")
-    service._read_base_image_bytes = MagicMock(return_value=b"base-image")
     service._timestamp_to_string = MagicMock(
         return_value="2026-04-03:13:39"
     )
@@ -47,36 +48,32 @@ def test_generate_and_save_image_writes_expected_jpg_name(tmp_path) -> None:
     )
 
 
-def test_find_most_recent_image_file_returns_recent_image(tmp_path) -> None:
+def test_get_latest_generated_image_returns_database_value() -> None:
+    expected = MagicMock()
+    database = MagicMock()
+    database.get_latest_generated_image = AsyncMock(return_value=expected)
+    service = ImageGenerationService(
+        sensor_service=MagicMock(),
+        image_client=MagicMock(),
+        database=database,
+    )
+
+    generated_image = asyncio.run(service.get_latest_generated_image())
+
+    assert generated_image == expected
+    database.get_latest_generated_image.assert_awaited_once_with()
+
+
+def test_timestamp_to_string_formats_date() -> None:
     service = ImageGenerationService(
         sensor_service=MagicMock(),
         image_client=MagicMock(),
         database=MagicMock(),
     )
-    service.generated_image_dir = tmp_path
-    recent_image = tmp_path / "sunflower_2026-04-03:13:39.jpg"
-    recent_image.write_bytes(b"existing")
 
-    output_path = service._find_most_recent_image_file()
+    value = datetime(2026, 4, 3, 13, 39)
 
-    assert output_path == recent_image
-
-
-def test_find_most_recent_image_file_returns_latest_image(tmp_path) -> None:
-    service = ImageGenerationService(
-        sensor_service=MagicMock(),
-        image_client=MagicMock(),
-        database=MagicMock(),
-    )
-    service.generated_image_dir = tmp_path
-    older_image = tmp_path / "sunflower_2026-04-03:12:00.jpg"
-    older_image.write_bytes(b"old")
-    latest_image = tmp_path / "sunflower_2026-04-03:13:39.jpg"
-    latest_image.write_bytes(b"new")
-
-    output_path = service._find_most_recent_image_file()
-
-    assert output_path == latest_image
+    assert service._timestamp_to_string(value) == "2026-04-03:13:39"
 
 
 def test_craft_image_prompt_reflects_sensor_state() -> None:
@@ -96,7 +93,7 @@ def test_craft_image_prompt_reflects_sensor_state() -> None:
     prompt = service._craft_image_prompt(snapshot)
 
     assert "soil well hydrated" in prompt
-    assert "strong daylight" in prompt
+    assert "bright room" in prompt
     assert "warm, comfortable atmosphere" in prompt
 
 
@@ -143,7 +140,7 @@ def test_craft_image_prompt_calls_easter_egg_when_gate_is_true() -> None:
     assert "EASTER" in prompt
 
 
-def test_get_latest_generated_image_falls_back_to_file(tmp_path) -> None:
+def test_get_latest_generated_image_returns_none_when_database_empty() -> None:
     database = MagicMock()
     database.get_latest_generated_image = AsyncMock(return_value=None)
     service = ImageGenerationService(
@@ -151,14 +148,8 @@ def test_get_latest_generated_image_falls_back_to_file(tmp_path) -> None:
         image_client=MagicMock(),
         database=database,
     )
-    service.generated_image_dir = tmp_path
-    latest_image = tmp_path / "sunflower_2026-04-03:13:39.jpg"
-    latest_image.write_bytes(b"new")
 
     generated_image = asyncio.run(service.get_latest_generated_image())
 
-    assert generated_image == GeneratedImage(
-        filename="sunflower_2026-04-03:13:39.jpg",
-        generated_at=generated_image.generated_at,
-        sensor_snapshot=None,
-    )
+    assert generated_image is None
+    database.get_latest_generated_image.assert_awaited_once_with()

@@ -1,5 +1,6 @@
 import random
 from datetime import datetime
+import logging
 from pathlib import Path
 from typing import Protocol
 
@@ -17,6 +18,9 @@ from app.services.sensor_service import (
 )
 
 
+logger = logging.getLogger(__name__)
+
+
 class ImageClient(Protocol):
     def generate_image(self, prompt: str, base_image_bytes: bytes) -> bytes:
         ...
@@ -25,9 +29,9 @@ class ImageClient(Protocol):
 class ImageGenerationService:
     def __init__(
             self,
-            sensor_service=Depends(SensorService),
+            sensor_service: SensorService = Depends(SensorService),
             image_client: ImageClient = Depends(GeminiClient),
-            database=Depends(Database)):
+            database: Database = Depends(Database)):
         self.sensor_service = sensor_service
         self.image_client = image_client
         self.database = database
@@ -47,9 +51,10 @@ class ImageGenerationService:
     async def generate_and_save_image(self) -> Path:
         snapshot = await self.sensor_service.get_snapshot()
         prompt = self._craft_image_prompt(snapshot)
+        logger.info("Crafted image prompt: %s", prompt)
         image_bytes = self.image_client.generate_image(
             prompt=prompt,
-            base_image_bytes=self._read_base_image_bytes(),
+            base_image_bytes=self.base_image_path.read_bytes(),
         )
         self.generated_image_dir.mkdir(parents=True, exist_ok=True)
         generated_at = datetime.now()
@@ -65,29 +70,8 @@ class ImageGenerationService:
         )
         return output_path
 
-    async def get_latest_generated_image(self) -> GeneratedImage | None:
-        generated_image = await self.database.get_latest_generated_image()
-        if generated_image is not None:
-            return generated_image
-
-        image_path = self._find_most_recent_image_file()
-        if image_path is None:
-            return None
-
-        return GeneratedImage(
-            filename=image_path.name,
-            generated_at=datetime.fromtimestamp(image_path.stat().st_mtime),
-        )
-
-    def _find_most_recent_image_file(self) -> Path | None:
-        if not self.generated_image_dir.exists():
-            return None
-
-        image_paths = list(self.generated_image_dir.glob("sunflower_*.jpg"))
-        if not image_paths:
-            return None
-
-        return max(image_paths, key=lambda path: path.stat().st_mtime)
+    async def get_latest_generated_image(self) -> GeneratedImage:
+        return await self.database.get_latest_generated_image()
 
     def _craft_image_prompt(self, snapshot: SensorSnapshot) -> str:
         prompt = [
@@ -100,10 +84,11 @@ class ImageGenerationService:
         prompt.append("#1:" + self._build_moisture_prompt(snapshot))
         prompt.append("#2:" + self._build_light_prompt(snapshot))
         prompt.append("#3:" + self._build_temperature_prompt(snapshot))
+        prompt.append("#4:" + self._build_time_of_day_prompt(datetime.now()))
 
         if self._should_include_easter_egg():
-            prompt.append(self._get_easter_egg_prompt())
-        prompt.append(self._maybe_get_special_event_prompt())
+            prompt.append("#5:" + self._get_easter_egg_prompt())
+        prompt.append("#6:" + self._maybe_get_special_event_prompt())
 
         return " ".join(prompt)
 
@@ -134,7 +119,7 @@ class ImageGenerationService:
         if snapshot.light < LIGHT_THRESHOLD:
             return "Dim the scene to suggest a dark room."
 
-        return "Brighten the scene to suggest strong daylight."
+        return "Brighten the scene to suggest a bright room."
 
     def _build_temperature_prompt(self, snapshot: SensorSnapshot) -> str:
         if snapshot.temperature < TEMPERATURE_THRESHOLD:
@@ -142,8 +127,16 @@ class ImageGenerationService:
 
         return "Add a warm, comfortable atmosphere to the image."
 
-    def _read_base_image_bytes(self) -> bytes:
-        return self.base_image_path.read_bytes()
+    def _build_time_of_day_prompt(self, time: datetime) -> str:
+        hour = time.hour
+        if 5 <= hour < 12:
+            return "Make the scene look like it's morning."
+        elif 12 <= hour < 17:
+            return "Make the scene look like it's afternoon."
+        elif 17 <= hour < 21:
+            return "Make the scene look like it's evening."
+        else:
+            return "Make the scene look like it's night."
 
     def _timestamp_to_string(self, value: datetime) -> str:
         return value.strftime("%Y-%m-%d:%H:%M")

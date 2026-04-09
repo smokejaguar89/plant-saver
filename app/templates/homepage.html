@@ -111,18 +111,6 @@
     {% endfor %}
 
     <script>
-        // Your JavaScript still fetches from your /api/sensors endpoint
-        async function updateData() {
-            const res = await fetch('/api/sensors');
-            const data = await res.json();
-            document.getElementById('temp').innerText = data.temperature + "°C";
-
-            const avgRes = await fetch('/api/sensors/last_week_average');
-            const avgData = await avgRes.json();
-            document.getElementById('avg-temp').innerText = avgData.temperature + "°C";
-        }
-        setInterval(updateData, 5000); // Update every 5 seconds
-
         const rawData = JSON.parse(document.body.dataset.timeSeries || '[]');
 
         // Extract labels (hours) and data for each line

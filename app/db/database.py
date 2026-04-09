@@ -1,4 +1,5 @@
 from datetime import datetime
+import logging
 
 from sqlmodel import Session, SQLModel, create_engine, select
 
@@ -6,6 +7,12 @@ from app.models.db.generated_image_entity import GeneratedImageEntity
 from app.models.db.sensor_snapshot_entity import SensorSnapshotEntity
 from app.models.domain.generated_image import GeneratedImage
 from app.models.domain.sensor_snapshot import SensorSnapshot
+
+logger = logging.getLogger(__name__)
+
+
+class EntityNotFoundError(Exception):
+    pass
 
 
 class Database:
@@ -18,7 +25,7 @@ class Database:
 
     async def save_snapshot(self, snapshot: SensorSnapshot):
         with Session(self.engine) as session:
-            print(f"Saving sensor data: {snapshot}")
+            logger.info(f"Saving sensor data: {snapshot}")
             session.add(SensorSnapshotEntity.from_sensor_snapshot(snapshot))
             session.commit()
 
@@ -37,7 +44,7 @@ class Database:
             )
             session.commit()
 
-    async def get_latest_generated_image(self) -> GeneratedImage | None:
+    async def get_latest_generated_image(self) -> GeneratedImage:
         with Session(self.engine) as session:
             statement = (
                 select(GeneratedImageEntity)
@@ -45,7 +52,7 @@ class Database:
             )
             result = session.exec(statement).first()
             if result is None:
-                return None
+                raise EntityNotFoundError("No generated image found.")
 
             return result.to_generated_image()
 

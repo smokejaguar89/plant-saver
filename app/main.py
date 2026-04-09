@@ -1,3 +1,4 @@
+import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -14,6 +15,19 @@ from app.scheduler.scheduler import Scheduler
 from app.clients.gemini_client import GeminiClient
 from app.services.image_generation_service import ImageGenerationService
 from app.services.sensor_service import SensorService
+
+
+app_logger = logging.getLogger("app")
+if not app_logger.handlers:
+    stream_handler = logging.StreamHandler()
+    stream_handler.setFormatter(
+        logging.Formatter(
+            "%(asctime)s | %(levelname)s | %(name)s | %(message)s"
+        )
+    )
+    app_logger.addHandler(stream_handler)
+app_logger.setLevel(logging.INFO)
+app_logger.propagate = False
 
 load_dotenv(dotenv_path=Path(__file__).resolve().parents[1] / ".env")
 
