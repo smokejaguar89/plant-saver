@@ -21,4 +21,4 @@ class FakeTSL2591Driver:
 
 class FakeSparkfunDriver:
     def get_reading(self) -> SparkfunReading:
-        return SparkfunReading(soil_hydration=random.uniform(10.0, 45.0))
+        return SparkfunReading(soil_hydration=random.uniform(0.1, 0.9))

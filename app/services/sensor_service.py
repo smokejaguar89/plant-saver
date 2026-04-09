@@ -1,7 +1,8 @@
 from datetime import datetime, timezone
 from app.models.domain.sensor_snapshot import SensorSnapshot
 
-MOISTURE_THRESHOLD = 22.5
+# Soil hydration is normalized to [0.0, 1.0]
+MOISTURE_THRESHOLD = 0.35
 
 # TSL2591 luminous flux (lux) category boundaries
 LIGHT_LOW_LUX_THRESHOLD = 20.0

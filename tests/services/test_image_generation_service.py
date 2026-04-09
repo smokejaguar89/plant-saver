@@ -12,7 +12,7 @@ def test_generate_and_save_image_writes_expected_jpg_name(tmp_path) -> None:
         temperature=26.0,
         humidity=45.0,
         light=50.0,
-        moisture=40.0,
+        moisture=0.7,
         pressure=1008.0,
     )
     sensor_service = MagicMock()
@@ -81,7 +81,7 @@ def test_generate_and_save_image_uses_exact_healthy_prompt(
         temperature=26.0,
         humidity=45.0,
         light=50.0,
-        moisture=40.0,
+        moisture=0.7,
         pressure=1008.0,
     )
     sensor_service = MagicMock()
@@ -134,7 +134,7 @@ def test_generate_and_save_image_uses_exact_stressed_prompt(
         temperature=18.0,
         humidity=45.0,
         light=12.0,
-        moisture=10.0,
+        moisture=0.1,
         pressure=1008.0,
     )
     sensor_service = MagicMock()
@@ -187,7 +187,7 @@ def test_generate_and_save_image_includes_easter_egg_prompt_when_enabled(
         temperature=26.0,
         humidity=45.0,
         light=50.0,
-        moisture=40.0,
+        moisture=0.7,
         pressure=1008.0,
     )
     sensor_service = MagicMock()
@@ -244,7 +244,7 @@ def test_generate_and_save_image_includes_special_event_prompt_when_present(
         temperature=26.0,
         humidity=45.0,
         light=50.0,
-        moisture=40.0,
+        moisture=0.7,
         pressure=1008.0,
     )
     sensor_service = MagicMock()
