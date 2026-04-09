@@ -11,10 +11,12 @@ from app.clients.gemini_client import GeminiClient
 from app.models.domain.generated_image import GeneratedImage
 from app.models.domain.sensor_snapshot import SensorSnapshot
 from app.services.sensor_service import (
-    LIGHT_THRESHOLD,
+    LIGHT_LOW_LUX_THRESHOLD,
+    LIGHT_NORMAL_LUX_UPPER_THRESHOLD,
     MOISTURE_THRESHOLD,
     SensorService,
-    TEMPERATURE_THRESHOLD,
+    TEMPERATURE_COMFORT_C_UPPER_THRESHOLD,
+    TEMPERATURE_COOL_C_THRESHOLD,
 )
 
 
@@ -121,16 +123,22 @@ class ImageGenerationService:
         return "Keep the sunflower healthy and the soil well hydrated."
 
     def _build_light_prompt(self, snapshot: SensorSnapshot) -> str:
-        if snapshot.light < LIGHT_THRESHOLD:
+        if snapshot.light < LIGHT_LOW_LUX_THRESHOLD:
             return "Dim the scene to suggest a dark room."
 
-        return "Brighten the scene to suggest a bright room."
+        if snapshot.light < LIGHT_NORMAL_LUX_UPPER_THRESHOLD:
+            return "Use soft, natural indoor lighting."
+
+        return "Brighten the scene to suggest strong daylight."
 
     def _build_temperature_prompt(self, snapshot: SensorSnapshot) -> str:
-        if snapshot.temperature < TEMPERATURE_THRESHOLD:
+        if snapshot.temperature < TEMPERATURE_COOL_C_THRESHOLD:
             return "Add a cool, chilly atmosphere to the image."
 
-        return "Add a warm, comfortable atmosphere to the image."
+        if snapshot.temperature <= TEMPERATURE_COMFORT_C_UPPER_THRESHOLD:
+            return "Keep a neutral, comfortable atmosphere in the image."
+
+        return "Add a warm, slightly hot atmosphere to the image."
 
     def _build_time_of_day_prompt(self, time: datetime) -> str:
         hour = time.hour

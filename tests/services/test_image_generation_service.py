@@ -108,8 +108,8 @@ def test_generate_and_save_image_uses_exact_healthy_prompt(
         "Use the provided sunflower painting as the base image. "
         "Edit the scene to reflect the plant's environment. "
         "#1:Keep the sunflower healthy and the soil well hydrated. "
-        "#2:Brighten the scene to suggest a bright room. "
-        "#3:Add a warm, comfortable atmosphere to the image. "
+        "#2:Use soft, natural indoor lighting. "
+        "#3:Keep a neutral, comfortable atmosphere in the image. "
         "#4:Make the scene look like it's afternoon."
     )
 
@@ -217,8 +217,8 @@ def test_generate_and_save_image_includes_easter_egg_prompt_when_enabled(
         "Use the provided sunflower painting as the base image. "
         "Edit the scene to reflect the plant's environment. "
         "#1:Keep the sunflower healthy and the soil well hydrated. "
-        "#2:Brighten the scene to suggest a bright room. "
-        "#3:Add a warm, comfortable atmosphere to the image. "
+        "#2:Use soft, natural indoor lighting. "
+        "#3:Keep a neutral, comfortable atmosphere in the image. "
         "#4:Make the scene look like it's afternoon. "
         "#5:Add a tiny ladybug on a leaf."
     )
@@ -274,8 +274,8 @@ def test_generate_and_save_image_includes_special_event_prompt_when_present(
         "Use the provided sunflower painting as the base image. "
         "Edit the scene to reflect the plant's environment. "
         "#1:Keep the sunflower healthy and the soil well hydrated. "
-        "#2:Brighten the scene to suggest a bright room. "
-        "#3:Add a warm, comfortable atmosphere to the image. "
+        "#2:Use soft, natural indoor lighting. "
+        "#3:Keep a neutral, comfortable atmosphere in the image. "
         "#4:Make the scene look like it's afternoon. "
         "#6:Add soft lanterns in the background."
     )
