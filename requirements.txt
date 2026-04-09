@@ -20,11 +20,5 @@ python-dotenv>=1.0.1
 pytest>=7.0.0
 httpx>=0.24.0
 
-# Optional: Hardware (Uncomment based on your specific sensors)
-# RPi.GPIO      # Standard GPIO library
-# adafruit-blinka # If using CircuitPython libraries
-adafruit-blinka
-adafruit-circuitpython-tsl2591>=1.4.7
-adafruit-circuitpython-bme280
-gpiozero
-lgpio
+# Hardware dependencies live in requirements-hardware.txt
+# so local/dev installs (macOS/Windows/Linux without GPIO) still work.

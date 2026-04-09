@@ -1,0 +1,7 @@
+# Raspberry Pi / hardware-only dependencies
+# Install these on the target Linux device with real sensors attached.
+
+adafruit-blinka>=8.0.0
+adafruit-circuitpython-tsl2591>=1.4.7
+adafruit-circuitpython-bme280>=2.6.26
+gpiozero>=2.0.1

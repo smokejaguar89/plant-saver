@@ -31,7 +31,13 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-You may need to run the following commands if lgpio fails:
+For Raspberry Pi / Linux hardware installs, also run:
+
+```bash
+pip install -r requirements-hardware.txt
+```
+
+If `lgpio` fails on Pi, install system packages:
 ```bash
 sudo apt update
 sudo apt install swig liblgpio-dev
@@ -93,8 +99,10 @@ pytest -q
 ## Troubleshooting
 
 - Running on macOS/laptop without hardware:
+  - install only `requirements.txt`
   - use `SENSOR_MODE=TEST`
 - Hardware import/platform errors:
   - confirm test mode is enabled before startup
+  - install `requirements-hardware.txt` only on the Linux device with sensors
 - Gemini image generation not working:
   - verify `GEMINI_API_KEY` is set
