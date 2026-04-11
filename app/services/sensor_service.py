@@ -18,21 +18,21 @@ class SensorService:
             self,
             bme280,
             tsl2591,
-            sparkfun):
+            soil_moisture):
         self.bme280 = bme280
         self.tsl2591 = tsl2591
-        self.sparkfun = sparkfun
+        self.soil_moisture = soil_moisture
 
     async def get_snapshot(self) -> SensorSnapshot:
         bme280Reading = self.bme280.get_reading()
         tsl2591Reading = self.tsl2591.get_reading()
-        sparkfunReading = self.sparkfun.get_reading()
+        soilMoistureReading = self.soil_moisture.get_reading()
 
         return SensorSnapshot(
             temperature=bme280Reading.ambient_temp_celsius,
             humidity=bme280Reading.relative_humidity_pct,
             pressure=bme280Reading.barometric_pressure_hpa,
             light=tsl2591Reading.luminous_flux,
-            moisture=sparkfunReading.soil_hydration,
+            moisture=soilMoistureReading.soil_hydration,
             timestamp=datetime.now(timezone.utc)
         )

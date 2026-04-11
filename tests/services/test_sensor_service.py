@@ -17,9 +17,15 @@ def test_get_sensor_data_maps_sensor_readings() -> None:
     )
     tsl2591 = MagicMock()
     tsl2591.get_reading.return_value = TSL2591Reading(luminous_flux=312.1)
-    sparkfun = MagicMock()
-    sparkfun.get_reading.return_value = SparkfunReading(soil_hydration=17.6)
-    service = SensorService(bme280=bme280, tsl2591=tsl2591, sparkfun=sparkfun)
+    soil_moisture = MagicMock()
+    soil_moisture.get_reading.return_value = SparkfunReading(
+        soil_hydration=17.6,
+    )
+    service = SensorService(
+        bme280=bme280,
+        tsl2591=tsl2591,
+        soil_moisture=soil_moisture,
+    )
 
     # Act
     sensor_data = asyncio.run(service.get_snapshot())

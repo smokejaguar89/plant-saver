@@ -1,13 +1,16 @@
 import asyncio
 from unittest.mock import AsyncMock, patch
 
-from app.hardware.sparkfun_driver import SparkfunDriver
+from app.hardware.soil_moisture_driver import SoilMoistureDriver
 from app.models.domain.sparkfun_reading import SparkfunReading
 
 
-@patch("app.hardware.sparkfun_driver.asyncio.sleep", new_callable=AsyncMock)
-@patch("app.hardware.sparkfun_driver.DigitalOutputDevice")
-@patch("app.hardware.sparkfun_driver.MCP3008")
+@patch(
+    "app.hardware.soil_moisture_driver.asyncio.sleep",
+    new_callable=AsyncMock,
+)
+@patch("app.hardware.soil_moisture_driver.DigitalOutputDevice")
+@patch("app.hardware.soil_moisture_driver.MCP3008")
 def test_get_reading_powers_sensor_and_maps_adc_value(
     mock_mcp3008,
     mock_power_device,
@@ -15,7 +18,7 @@ def test_get_reading_powers_sensor_and_maps_adc_value(
 ) -> None:
     # Arrange
     mock_mcp3008.return_value.value = 0.73
-    sensor = SparkfunDriver()
+    sensor = SoilMoistureDriver()
 
     # Act
     reading = asyncio.run(sensor.get_reading())

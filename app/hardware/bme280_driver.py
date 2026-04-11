@@ -1,13 +1,14 @@
 from adafruit_bme280 import basic as adafruit_bme280
 
+from app.hardware.driver_protocols import LockedI2CBusDriver
 from app.hardware.locked_i2c_bus import LockedI2CBus
 from app.models.domain.bme280_reading import BME280Reading
 
 
-class BME280Driver:
-    # Keep this driver as a DI singleton. Multiple instances can appear
-    # to work, but they still share the same physical I2C bus/device and
-    # can contend under concurrent access.
+class BME280Driver(LockedI2CBusDriver[BME280Reading]):
+    # Multiple driver instances are safe as long as they all share the
+    # same LockedI2CBus. The shared bus wrapper is what serializes I2C
+    # access; DI singleton usage here is mainly for consistency.
     def __init__(self, i2c_bus: LockedI2CBus):
         self._i2c_bus = i2c_bus
         self.bme280 = adafruit_bme280.Adafruit_BME280_I2C(

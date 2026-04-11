@@ -1,27 +1,47 @@
+import importlib
+import sys
 import threading
 import time
-from unittest.mock import patch
+from types import SimpleNamespace
+from unittest.mock import MagicMock
 
-from app.hardware.locked_i2c_bus import LockedI2CBus
+
+def load_locked_i2c_bus_module(board_i2c=None):
+    mock_board_i2c = MagicMock(return_value=board_i2c or object())
+    fake_board = SimpleNamespace(I2C=mock_board_i2c)
+    previous_module = sys.modules.pop("app.hardware.locked_i2c_bus", None)
+    previous_board = sys.modules.get("board")
+
+    try:
+        sys.modules["board"] = fake_board
+        return importlib.import_module("app.hardware.locked_i2c_bus")
+    finally:
+        sys.modules.pop("app.hardware.locked_i2c_bus", None)
+        if previous_module is not None:
+            sys.modules["app.hardware.locked_i2c_bus"] = previous_module
+        if previous_board is None:
+            sys.modules.pop("board", None)
+        else:
+            sys.modules["board"] = previous_board
 
 
-@patch("app.hardware.locked_i2c_bus.board.I2C")
-def test_default_constructor_creates_board_i2c_bus(mock_board_i2c):
+def test_default_constructor_creates_board_i2c_bus():
     # Arrange
     mock_bus = object()
-    mock_board_i2c.return_value = mock_bus
+    locked_i2c_bus_module = load_locked_i2c_bus_module(board_i2c=mock_bus)
 
     # Act
-    i2c_bus = LockedI2CBus()
+    i2c_bus = locked_i2c_bus_module.LockedI2CBus()
 
     # Assert
     assert i2c_bus.raw_bus is mock_bus
-    mock_board_i2c.assert_called_once_with()
+    locked_i2c_bus_module.board.I2C.assert_called_once_with()
 
 
 def test_run_serializes_concurrent_operations():
     # Arrange
-    i2c_bus = LockedI2CBus(bus=object())
+    locked_i2c_bus_module = load_locked_i2c_bus_module()
+    i2c_bus = locked_i2c_bus_module.LockedI2CBus(bus=object())
     # Set when the first operation has entered the critical section.
     first_operation_entered = threading.Event()
     # Set when the second operation actually starts running.
@@ -72,7 +92,8 @@ def test_run_serializes_concurrent_operations():
 
 def test_run_releases_lock_when_operation_raises():
     # Arrange
-    i2c_bus = LockedI2CBus(bus=object())
+    locked_i2c_bus_module = load_locked_i2c_bus_module()
+    i2c_bus = locked_i2c_bus_module.LockedI2CBus(bus=object())
 
     def failing_operation():
         raise RuntimeError("boom")
