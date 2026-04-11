@@ -1,10 +1,11 @@
-from unittest.mock import patch
+import asyncio
+from unittest.mock import AsyncMock, patch
 
 from app.hardware.sparkfun_driver import SparkfunDriver
 from app.models.domain.sparkfun_reading import SparkfunReading
 
 
-@patch("app.hardware.sparkfun_driver.time.sleep")
+@patch("app.hardware.sparkfun_driver.asyncio.sleep", new_callable=AsyncMock)
 @patch("app.hardware.sparkfun_driver.DigitalOutputDevice")
 @patch("app.hardware.sparkfun_driver.MCP3008")
 def test_get_reading_powers_sensor_and_maps_adc_value(
@@ -17,7 +18,7 @@ def test_get_reading_powers_sensor_and_maps_adc_value(
     sensor = SparkfunDriver()
 
     # Act
-    reading = sensor.get_reading()
+    reading = asyncio.run(sensor.get_reading())
 
     # Assert
     assert isinstance(reading, SparkfunReading)

@@ -1,12 +1,13 @@
-import board
 from adafruit_bme280 import basic as adafruit_bme280
 
 from app.models.domain.bme280_reading import BME280Reading
 
 
 class BME280Driver:
-    def __init__(self):
-        i2c = board.I2C()   # uses board.SCL and board.SDA
+    # Keep this driver as a DI singleton. Multiple instances can appear
+    # to work, but they still share the same physical I2C bus/device and
+    # can contend under concurrent access.
+    def __init__(self, i2c):
         self.bme280 = adafruit_bme280.Adafruit_BME280_I2C(i2c, address=0x76)
 
     def get_reading(self) -> BME280Reading:

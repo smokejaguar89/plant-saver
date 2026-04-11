@@ -4,6 +4,9 @@ from app.models.domain.bme280_reading import BME280Reading
 from app.models.domain.sparkfun_reading import SparkfunReading
 from app.models.domain.tsl2591_reading import TSL2591Reading
 
+# Keep singleton lifecycle in DI to mirror production wiring and
+# concurrency behavior in tests.
+
 
 class FakeBME280Driver:
     def get_reading(self) -> BME280Reading:

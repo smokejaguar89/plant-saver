@@ -1,18 +1,26 @@
 import os
 from functools import lru_cache
 
+import board
+
 from app.clients.gemini_client import GeminiClient
 from app.clients.news_api_client import NewsApiClient
 from app.db.database import Database
+from app.hardware.bme280_driver import BME280Driver
 from app.hardware.fake_drivers import (
     FakeBME280Driver,
     FakeSparkfunDriver,
     FakeTSL2591Driver,
 )
+from app.hardware.sparkfun_driver import SparkfunDriver
+from app.hardware.tsl2591_driver import TSL2591Driver
 from app.scheduler.scheduler import Scheduler
 from app.services.analytics_service import AnalyticsService
 from app.services.image_generation_service import ImageGenerationService
 from app.services.sensor_service import SensorService
+
+# Singleton I2C bus shared by all I2C-based hardware drivers
+i2c = board.I2C()
 
 
 def is_test_mode() -> bool:
@@ -29,14 +37,18 @@ def get_database() -> Database:
     return Database()
 
 
+# Hardware drivers are singletons (one instance per process).
+# - Sparkfun: required for correctness, because power on/off must be
+#   serialized to avoid races across concurrent callers.
+# - I2C sensors (BME280/TSL2591): multiple instances can appear to
+#   work, but they still share one physical bus/device and can contend
+#   under concurrency.
 @lru_cache
 def get_bme280_driver():
     if is_test_mode():
         return FakeBME280Driver()
 
-    from app.hardware.bme280_driver import BME280Driver
-
-    return BME280Driver()
+    return BME280Driver(i2c=i2c)
 
 
 @lru_cache
@@ -44,17 +56,13 @@ def get_tsl2591_driver():
     if is_test_mode():
         return FakeTSL2591Driver()
 
-    from app.hardware.tsl2591_driver import TSL2591Driver
-
-    return TSL2591Driver()
+    return TSL2591Driver(i2c=i2c)
 
 
 @lru_cache
 def get_sparkfun_driver():
     if is_test_mode():
         return FakeSparkfunDriver()
-
-    from app.hardware.sparkfun_driver import SparkfunDriver
 
     return SparkfunDriver()
 
