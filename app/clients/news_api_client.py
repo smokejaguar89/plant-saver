@@ -24,9 +24,7 @@ class NewsApiClient:
         if not self.api_key:
             raise NewsApiClientError("NEWS_API_KEY is not configured.")
 
-    async def get_top_headlines(
-        self, category: NewsCategory = NewsCategory.GENERAL
-    ) -> list[str]:
+    async def get_top_headlines(self, category: NewsCategory) -> list[str]:
         url = "https://newsapi.org/v2/top-headlines"
         params = {
             "category": category.value,

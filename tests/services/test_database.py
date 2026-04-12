@@ -60,6 +60,7 @@ def test_save_generated_image_adds_and_commits_record(session_cls) -> None:
     asyncio.run(
         db.save_generated_image(
             filename="sunflower_2026-04-03:13:39.jpg",
+            prompt="A prompt",
             generated_at=datetime(2026, 4, 3, 13, 39),
             snapshot=snapshot,
         )
@@ -77,6 +78,7 @@ def test_get_latest_generated_image_returns_record(session_cls) -> None:
     db = Database()
     entity = GeneratedImageEntity(
         filename="sunflower_2026-04-03:13:39.jpg",
+        prompt="A prompt",
         generated_at=datetime(2026, 4, 3, 13, 39),
         snapshot_timestamp=datetime(2026, 4, 3, 13, 38),
         temperature=24.2,
@@ -95,5 +97,6 @@ def test_get_latest_generated_image_returns_record(session_cls) -> None:
     # Assert
     assert generated_image is not None
     assert generated_image.filename == "sunflower_2026-04-03:13:39.jpg"
+    assert generated_image.prompt == "A prompt"
     assert generated_image.sensor_snapshot is not None
     assert generated_image.sensor_snapshot.moisture == 19.0

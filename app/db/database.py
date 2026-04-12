@@ -1,6 +1,7 @@
 from datetime import datetime
 import logging
 
+from sqlalchemy import text
 from sqlmodel import Session, SQLModel, create_engine, select
 
 from app.models.db.generated_image_entity import GeneratedImageEntity
@@ -22,6 +23,21 @@ class Database:
 
     def init(self):
         SQLModel.metadata.create_all(self.engine)
+        self._ensure_generated_image_prompt_column()
+
+    def _ensure_generated_image_prompt_column(self):
+        with self.engine.begin() as connection:
+            columns = connection.exec_driver_sql(
+                "PRAGMA table_info(generatedimageentity)"
+            ).fetchall()
+            column_names = {column[1] for column in columns}
+            if "prompt" not in column_names:
+                connection.execute(
+                    text(
+                        "ALTER TABLE generatedimageentity "
+                        "ADD COLUMN prompt TEXT"
+                    )
+                )
 
     async def save_snapshot(self, snapshot: SensorSnapshot):
         with Session(self.engine) as session:
@@ -30,12 +46,17 @@ class Database:
             session.commit()
 
     async def save_generated_image(
-        self, filename: str, generated_at: datetime, snapshot: SensorSnapshot
+        self,
+        filename: str,
+        prompt: str,
+        generated_at: datetime,
+        snapshot: SensorSnapshot,
     ):
         with Session(self.engine) as session:
             session.add(
                 GeneratedImageEntity.from_generated_image(
                     filename=filename,
+                    prompt=prompt,
                     generated_at=generated_at,
                     snapshot=snapshot,
                 )

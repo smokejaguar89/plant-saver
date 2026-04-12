@@ -75,6 +75,7 @@ def test_generate_and_save_image_writes_expected_jpg_name(tmp_path) -> None:
     )
     database.save_generated_image.assert_awaited_once_with(
         filename="sunflower_2026-04-03:13:39.jpg",
+        prompt="plant prompt",
         generated_at=ANY,
         snapshot=snapshot,
     )

@@ -10,6 +10,7 @@ from app.models.domain.sensor_snapshot import SensorSnapshot
 class GeneratedImageEntity(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     filename: str = Field(index=True)
+    prompt: Optional[str] = None
     generated_at: datetime.datetime = Field(
         default_factory=lambda: datetime.datetime.now(datetime.timezone.utc),
         index=True,
@@ -25,6 +26,7 @@ class GeneratedImageEntity(SQLModel, table=True):
         return GeneratedImage(
             filename=self.filename,
             generated_at=self.generated_at,
+            prompt=self.prompt,
             sensor_snapshot=SensorSnapshot(
                 light=self.light,
                 temperature=self.temperature,
@@ -39,11 +41,13 @@ class GeneratedImageEntity(SQLModel, table=True):
     def from_generated_image(
         cls,
         filename: str,
+        prompt: str,
         generated_at: datetime.datetime,
         snapshot: SensorSnapshot,
     ) -> "GeneratedImageEntity":
         return cls(
             filename=filename,
+            prompt=prompt,
             generated_at=generated_at,
             snapshot_timestamp=snapshot.timestamp,
             temperature=snapshot.temperature,

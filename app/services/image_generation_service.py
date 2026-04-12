@@ -158,9 +158,12 @@ class ImageGenerationService:
 
     async def generate_and_save_image(self) -> Path:
         snapshot = await self.sensor_service.get_snapshot()
-        output_path, generated_at = await self._generate_image(snapshot)
+        output_path, generated_at, prompt = await self._generate_image(
+            snapshot
+        )
         await self.database.save_generated_image(
             filename=output_path.name,
+            prompt=prompt,
             generated_at=generated_at,
             snapshot=snapshot,
         )
@@ -168,7 +171,7 @@ class ImageGenerationService:
 
     async def _generate_image(
         self, snapshot: SensorSnapshot
-    ) -> tuple[Path, datetime]:
+    ) -> tuple[Path, datetime, str]:
         prompt = await self._craft_image_prompt(snapshot)
         logger.info("Crafted image prompt: %s", prompt)
         base_image_bytes = self.base_image_path.read_bytes()
@@ -178,7 +181,7 @@ class ImageGenerationService:
         )
         generated_at = datetime.now()
         output_path = self._write_generated_image(image_bytes, generated_at)
-        return output_path, generated_at
+        return output_path, generated_at, prompt
 
     async def get_latest_generated_image(self) -> Optional[GeneratedImage]:
         return await self.database.get_latest_generated_image()

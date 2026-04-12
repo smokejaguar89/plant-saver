@@ -8,4 +8,5 @@ from app.models.domain.sensor_snapshot import SensorSnapshot
 class GeneratedImage:
     filename: str
     generated_at: datetime
+    prompt: str | None = None
     sensor_snapshot: SensorSnapshot | None = None
