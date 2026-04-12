@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from app.models.domain.weather_snapshot import WeatherSnapshot, WeatherCode
 import requests
 
@@ -55,5 +57,5 @@ class OpenMeteoClient:
             showers=current.get("showers"),
             snowfall=current.get("snowfall"),
             cloud_cover=current.get("cloud_cover"),
-            timestamp=data.get("current_time"),
+            timestamp=datetime.fromisoformat(current.get("time")),
         )

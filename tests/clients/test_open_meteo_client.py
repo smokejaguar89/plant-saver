@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -17,6 +19,7 @@ def test_get_current_weather_zurich_returns_weather_snapshot() -> None:
     mock_response.status_code = 200
     mock_response.json.return_value = {
         "current": {
+            "time": "2026-04-12T10:00",
             "weather_code": 2,
             "wind_speed_10m": 4.2,
             "temperature_2m": 21.3,
@@ -26,8 +29,7 @@ def test_get_current_weather_zurich_returns_weather_snapshot() -> None:
             "showers": 0.1,
             "snowfall": 0.0,
             "cloud_cover": 42,
-        },
-        "current_time": "2026-04-12T10:00",
+        }
     }
 
     # Act
@@ -47,7 +49,7 @@ def test_get_current_weather_zurich_returns_weather_snapshot() -> None:
     assert weather.showers == 0.1
     assert weather.snowfall == 0.0
     assert weather.cloud_cover == 42
-    assert weather.timestamp == "2026-04-12T10:00"
+    assert weather.timestamp == datetime(2026, 4, 12, 10, 0)
 
     mock_get.assert_called_once_with(
         client.api_url,
