@@ -84,7 +84,8 @@ class _ImagePromptBuilder:
         prompt.append("#1: " + self.build_weather_overview(context.weather))
         prompt.append(
             "#2: Update the background landscape "
-            f"to incorporate this story: {context.top_story}."
+            f"to incorporate this story: {context.top_story}. "
+            "Do not use words. Be creative."
         )
 
         # Conclusion

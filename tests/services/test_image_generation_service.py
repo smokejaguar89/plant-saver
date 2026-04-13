@@ -157,6 +157,7 @@ def test_generate_and_save_image_uses_exact_healthy_prompt(
         "The temperature outside is 20.0°C. "
         "#2: Update the background landscape "
         "to incorporate this story: Story 1. "
+        "Do not use words. Be creative. "
         "Finally: Don't include any people in the image."
     )
 
@@ -222,6 +223,7 @@ def test_generate_and_save_image_uses_exact_stressed_prompt(
         "The temperature outside is 20.0°C. "
         "#2: Update the background landscape "
         "to incorporate this story: Story 1. "
+        "Do not use words. Be creative. "
         "Finally: Don't include any people in the image."
     )
 
@@ -343,6 +345,7 @@ def test_craft_image_prompt_includes_top_stories(
         "The temperature outside is 20.0°C. "
         "#2: Update the background landscape to incorporate this story: "
         "Breaking: AI advances reshape tech industry. "
+        "Do not use words. Be creative. "
         "Finally: Don't include any people in the image."
     )
 
@@ -476,6 +479,7 @@ def test_craft_image_prompt_uses_only_first_story(
         "The temperature outside is 20.0°C. "
         "#2: Update the background landscape "
         "to incorporate this story: Story 1. "
+        "Do not use words. Be creative. "
         "Finally: Don't include any people in the image."
     )
 
