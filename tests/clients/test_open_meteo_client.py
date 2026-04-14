@@ -168,12 +168,15 @@ def test_get_current_weather_zurich_retries_then_succeeds() -> None:
     )
 
     # Act
-    with patch(
-        "app.clients.open_meteo_client.httpx.AsyncClient"
-    ) as MockAsyncClient, patch(
-        "app.clients.open_meteo_client.asyncio.sleep",
-        new=AsyncMock(),
-    ) as sleep_mock:
+    with (
+        patch(
+            "app.clients.open_meteo_client.httpx.AsyncClient"
+        ) as MockAsyncClient,
+        patch(
+            "app.clients.open_meteo_client.asyncio.sleep",
+            new=AsyncMock(),
+        ) as sleep_mock,
+    ):
         MockAsyncClient.return_value.__aenter__ = AsyncMock(
             return_value=mock_http_client
         )
@@ -190,17 +193,18 @@ def test_get_current_weather_zurich_raises_after_max_attempts() -> None:
     # Arrange
     client = OpenMeteoClient()
     mock_http_client = AsyncMock()
-    mock_http_client.get = AsyncMock(
-        side_effect=httpx.ReadTimeout("timeout")
-    )
+    mock_http_client.get = AsyncMock(side_effect=httpx.ReadTimeout("timeout"))
 
     # Act
-    with patch(
-        "app.clients.open_meteo_client.httpx.AsyncClient"
-    ) as MockAsyncClient, patch(
-        "app.clients.open_meteo_client.asyncio.sleep",
-        new=AsyncMock(),
-    ) as sleep_mock:
+    with (
+        patch(
+            "app.clients.open_meteo_client.httpx.AsyncClient"
+        ) as MockAsyncClient,
+        patch(
+            "app.clients.open_meteo_client.asyncio.sleep",
+            new=AsyncMock(),
+        ) as sleep_mock,
+    ):
         MockAsyncClient.return_value.__aenter__ = AsyncMock(
             return_value=mock_http_client
         )

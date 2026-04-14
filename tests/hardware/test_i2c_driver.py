@@ -17,8 +17,12 @@ def load_i2c_driver_module(board_i2c=None):
     # Mock the adafruit sensor constructors
     with (
         patch("app.hardware.i2c_driver.board", fake_board),
-        patch("app.hardware.i2c_driver.adafruit_bme280.Adafruit_BME280_I2C") as mock_bme_ctor,
-        patch("app.hardware.i2c_driver.adafruit_tsl2591.TSL2591") as mock_tsl_ctor,
+        patch(
+            "app.hardware.i2c_driver.adafruit_bme280.Adafruit_BME280_I2C"
+        ) as mock_bme_ctor,
+        patch(
+            "app.hardware.i2c_driver.adafruit_tsl2591.TSL2591"
+        ) as mock_tsl_ctor,
     ):
         mock_bme_sensor = MagicMock()
         mock_bme_sensor.temperature = 21.5
@@ -42,7 +46,9 @@ def test_default_constructor_creates_board_i2c():
         mock_i2c.return_value = mock_bus
 
         with (
-            patch("app.hardware.i2c_driver.adafruit_bme280.Adafruit_BME280_I2C"),
+            patch(
+                "app.hardware.i2c_driver.adafruit_bme280.Adafruit_BME280_I2C"
+            ),
             patch("app.hardware.i2c_driver.adafruit_tsl2591.TSL2591"),
         ):
             driver = I2CDriver()
@@ -107,7 +113,9 @@ def test_bme280_initialized_with_correct_address():
         mock_i2c.return_value = mock_bus
 
         with (
-            patch("app.hardware.i2c_driver.adafruit_bme280.Adafruit_BME280_I2C") as mock_bme_ctor,
+            patch(
+                "app.hardware.i2c_driver.adafruit_bme280.Adafruit_BME280_I2C"
+            ) as mock_bme_ctor,
             patch("app.hardware.i2c_driver.adafruit_tsl2591.TSL2591"),
         ):
             driver = I2CDriver()

@@ -19,7 +19,8 @@ def test_get_sensor_data_maps_sensor_readings() -> None:
     )
     tsl2591 = MagicMock()
     tsl2591.get_reading = AsyncMock(
-        return_value=TSL2591Reading(luminous_flux=312.1))
+        return_value=TSL2591Reading(luminous_flux=312.1)
+    )
     soil_moisture = MagicMock()
     soil_moisture.get_reading = AsyncMock(
         return_value=SparkfunReading(

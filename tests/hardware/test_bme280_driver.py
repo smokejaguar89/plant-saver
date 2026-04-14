@@ -14,7 +14,8 @@ def test_get_reading_delegates_to_ic2_driver() -> None:
     )
     mock_ic2_driver = MagicMock()
     mock_ic2_driver.get_bme280_reading = AsyncMock(
-        return_value=expected_reading)
+        return_value=expected_reading
+    )
     sensor = BME280Driver(ic2_driver=mock_ic2_driver)
 
     # Act

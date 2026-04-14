@@ -21,12 +21,14 @@ class I2CDriver:
 
     def __init__(self, bus=None):
         self._executor = ThreadPoolExecutor(
-            max_workers=1, thread_name_prefix="I2C_Thread")
+            max_workers=1, thread_name_prefix="I2C_Thread"
+        )
 
         def _init_sensors():
             raw_bus = bus if bus is not None else board.I2C()
             self._bme280 = adafruit_bme280.Adafruit_BME280_I2C(
-                raw_bus, address=self.BME280_ADDRESS)
+                raw_bus, address=self.BME280_ADDRESS
+            )
             self._tsl2591 = adafruit_tsl2591.TSL2591(raw_bus)
             self._raw_bus = raw_bus
 
@@ -38,6 +40,7 @@ class I2CDriver:
         Read BME280 sensor values asynchronously.
         Executes on dedicated I2C thread to serialize hardware access.
         """
+
         def _read():
             # This inner function executes ONLY on the dedicated I2C thread
             return BME280Reading(
@@ -55,6 +58,7 @@ class I2CDriver:
         Read TSL2591 sensor values asynchronously.
         Executes on dedicated I2C thread to serialize hardware access.
         """
+
         def _read():
             return TSL2591Reading(luminous_flux=self._tsl2591.lux)
 

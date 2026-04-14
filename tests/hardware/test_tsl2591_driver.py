@@ -10,7 +10,8 @@ def test_get_reading_delegates_to_ic2_driver() -> None:
     expected_reading = TSL2591Reading(luminous_flux=24.3)
     mock_ic2_driver = MagicMock()
     mock_ic2_driver.get_tsl2591_reading = AsyncMock(
-        return_value=expected_reading)
+        return_value=expected_reading
+    )
     sensor = TSL2591Driver(ic2_driver=mock_ic2_driver)
 
     # Act

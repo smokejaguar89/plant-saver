@@ -31,6 +31,7 @@ class FakeI2CDriver:
 
     def get_tsl2591_reading(self):
         from app.models.domain.tsl2591_reading import TSL2591Reading
+
         return TSL2591Reading(luminous_flux=random.uniform(1.0, 300.0))
 
 

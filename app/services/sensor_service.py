@@ -21,17 +21,21 @@ class SensorService:
         self.soil_moisture = soil_moisture
 
     async def get_snapshot(self) -> SensorSnapshot:
-        bme280Reading, tsl2591Reading, soilMoistureReading = await asyncio.gather(
+        (
+            bme280_reading,
+            tsl2591_reading,
+            soil_moisture_reading,
+        ) = await asyncio.gather(
             self.bme280.get_reading(),
             self.tsl2591.get_reading(),
             self.soil_moisture.get_reading(),
         )
 
         return SensorSnapshot(
-            temperature=bme280Reading.ambient_temp_celsius,
-            humidity=bme280Reading.relative_humidity_pct,
-            pressure=bme280Reading.barometric_pressure_hpa,
-            light=tsl2591Reading.luminous_flux,
-            moisture=soilMoistureReading.soil_hydration,
+            temperature=bme280_reading.ambient_temp_celsius,
+            humidity=bme280_reading.relative_humidity_pct,
+            pressure=bme280_reading.barometric_pressure_hpa,
+            light=tsl2591_reading.luminous_flux,
+            moisture=soil_moisture_reading.soil_hydration,
             timestamp=datetime.now(timezone.utc),
         )

@@ -23,7 +23,8 @@ class AnalyticsService:
         self.database = database
 
     async def get_last_week_snapshots(
-            self, group_by: TimeGroup) -> list[SensorSnapshot]:
+        self, group_by: TimeGroup
+    ) -> list[SensorSnapshot]:
         snapshots = await self.database.get_snapshots_between(
             start_time=datetime.now() - timedelta(days=7),
             end_time=datetime.now(),
@@ -37,14 +38,13 @@ class AnalyticsService:
         }
 
         for snapshot in snapshots:
-            date_group = self.round_down(
-                snapshot.timestamp, deltas[group_by])
+            date_group = self.round_down(snapshot.timestamp, deltas[group_by])
             snapshots_by_hour[date_group].append(snapshot)
         averaged_snapshots = []
         for date_group, snapshot in snapshots_by_hour.items():
             avg_snapshot = SensorSnapshot(
-                temperature=sum(
-                    s.temperature for s in snapshot) / len(snapshot),
+                temperature=sum(s.temperature for s in snapshot)
+                / len(snapshot),
                 humidity=sum(s.humidity for s in snapshot) / len(snapshot),
                 light=sum(s.light for s in snapshot) / len(snapshot),
                 moisture=sum(s.moisture for s in snapshot) / len(snapshot),
