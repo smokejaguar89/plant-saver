@@ -126,9 +126,9 @@ async def get_next_pull_time():
     for hour in IMAGE_GEN_CRON_SCHEDULE:
         candidate = now.replace(hour=hour, minute=0, second=0, microsecond=0)
         if candidate > now + timedelta(minutes=1):
-            return candidate + timedelta(minutes=10)
+            return candidate.astimezone(timezone.utc) + timedelta(minutes=10)
     # If no more slots today, go to the first slot tomorrow
     tomorrow_first = now.replace(
         hour=IMAGE_GEN_CRON_SCHEDULE[0], minute=0, second=0, microsecond=0
     )
-    return tomorrow_first + timedelta(days=1) + timedelta(minutes=10)
+    return tomorrow_first.astimezone(timezone.utc) + timedelta(days=1) + timedelta(minutes=10)
