@@ -1,6 +1,6 @@
 from pathlib import Path
 import logging
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Response, status
 from fastapi.responses import FileResponse
 import httpx
 import requests
@@ -9,6 +9,10 @@ from zoneinfo import ZoneInfo
 import asyncio
 
 from app.models.dto.get_sensor_data_response import GetSensorDataResponse
+from app.models.dto.get_eink_pull_response import (
+    GetEinkPullResponse,
+    GetEinkPullResponseData,
+)
 from app.models.dto.get_time_series_response import (
     GetTimeSeriesResponse,
     SensorSnapshotDto,
@@ -65,59 +69,46 @@ async def get_time_series(
     return GetTimeSeriesResponse(snapshots=snapshot_dtos)
 
 
-@router.get("/images/eink_pull", response_class=FileResponse)
-async def get_eink_image(
-    background_tasks: BackgroundTasks,
+@router.get("/images/eink_pull", response_model=GetEinkPullResponse)
+async def get_eink_pull(
+    response: Response,
     image_generation_service: ImageGenerationService = Depends(
         get_image_generation_service
     ),
 ):
-    GENERATED_IMAGE_DIR = (
-        Path(__file__).resolve().parents[1] / "static" / "img" / "gemini"
-    )
     metadata = await image_generation_service.get_latest_generated_image()
-    file_path = GENERATED_IMAGE_DIR / metadata.filename
+    next_pull_time = await get_next_pull_time()
+
+    if not metadata:
+        response.status_code = status.HTTP_204_NO_CONTENT
+        return GetEinkPullResponse(
+            status=204,
+            message="No image available",
+            data=GetEinkPullResponseData(
+                    next_cron_time=next_pull_time.strftime(
+                        "%Y-%m-%dT%H:%M:%SZ"),
+                    image_url=None,
+            )
+        )
+
+    RASPBERRY_PI_DOMAIN = "http://192.168.86.26:8000"
+    file_path = f"{RASPBERRY_PI_DOMAIN}/static/img/gemini/{metadata.filename}"
 
     logger.info("Getting image at %s.", file_path)
 
-    background_tasks.add_task(update_cron_time)
-
-    return FileResponse(
-        path=file_path,
-        media_type="image/jpeg",
-        filename=metadata.filename,
+    response.status_code = status.HTTP_200_OK
+    return GetEinkPullResponse(
+        status=200,
+        type="SHOW",
+        message="Image retrieved successfully",
+        data=GetEinkPullResponseData(
+            next_cron_time=next_pull_time.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            image_url=file_path,
+        )
     )
 
 
-async def update_cron_time():
-    BLOOMIN8_URL = "http://192.168.86.241/upstream/pull_settings"
-    GET_IMAGE_URL = "http://192.168.86.26:8000/api/images"
-
-    next_pull_time = await get_next_pull_time()
-
-    # .strftime('%Y-%m-%dT%H:%M:%SZ') is the safest way to ensure the 'Z' suffix
-    iso_string = next_pull_time.strftime("%Y-%m-%dT%H:%M:%SZ")
-
-    payload = {
-        "upstream_on": True,
-        "upstream_url": GET_IMAGE_URL,
-        "token": "super_secure_token",
-        "cron_time": iso_string,
-    }
-
-    try:
-        response = requests.put(
-            BLOOMIN8_URL,
-            json=payload,
-            timeout=10,
-            headers={"Accept": "application/json"}
-        )
-        print(f"✅ Sync Update Success: {response.status_code}")
-    except Exception as e:
-        print(f"❌ Sync Update Failed: {e}")
-
-
-async def get_next_pull_time():
+async def get_next_pull_time() -> datetime:
     now = datetime.now(ZoneInfo("Europe/Zurich"))
     for hour in IMAGE_GEN_CRON_SCHEDULE:
         candidate = now.replace(hour=hour, minute=0, second=0, microsecond=0)
