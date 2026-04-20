@@ -5,6 +5,7 @@ from fastapi.responses import FileResponse
 import httpx
 import requests
 from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 
 from app.models.dto.get_sensor_data_response import GetSensorDataResponse
 from app.models.dto.get_time_series_response import (
@@ -116,11 +117,11 @@ async def update_cron_time():
 
 
 async def get_next_pull_time():
-    now = datetime.now(timezone.utc)
+    now = datetime.now(ZoneInfo("Europe/Zurich"))
     for hour in IMAGE_GEN_CRON_SCHEDULE:
         candidate = now.replace(hour=hour, minute=0, second=0, microsecond=0)
         if candidate > now + timedelta(minutes=1):
-            return candidate
+            return candidate + timedelta(minutes=10)
     # If no more slots today, go to the first slot tomorrow
     tomorrow_first = now.replace(
         hour=IMAGE_GEN_CRON_SCHEDULE[0], minute=0, second=0, microsecond=0
