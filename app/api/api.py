@@ -6,6 +6,7 @@ import httpx
 import requests
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
+import asyncio
 
 from app.models.dto.get_sensor_data_response import GetSensorDataResponse
 from app.models.dto.get_time_series_response import (
@@ -91,6 +92,10 @@ async def get_eink_image(
 async def update_cron_time():
     BLOOMIN8_URL = "http://192.168.86.241/upstream/pull_settings"
     GET_IMAGE_URL = "http://192.168.86.26:8000/api/images"
+
+    # Wait 5 minutes. The frame needs time to take the image and update itself,
+    # during which time it may be blocked.
+    await asyncio.sleep(300)
 
     next_pull_time = await get_next_pull_time()
 
