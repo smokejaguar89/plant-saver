@@ -23,7 +23,8 @@ class SoilMoistureDriver:
             try:
                 await asyncio.sleep(0.1)  # Wait for the sensor to stabilize
                 reading = SoilMoistureReading(
-                    soil_hydration=self.mcp3008.value)
+                    soil_hydration=self.mcp3008.value
+                )
             finally:
                 # Power off the sensor to prevent corrosion (even if the
                 # read fails).

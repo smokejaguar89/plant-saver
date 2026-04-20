@@ -1,6 +1,8 @@
 import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
+import sys
+import os
 
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
@@ -9,18 +11,16 @@ from dotenv import load_dotenv
 from app.api import api, views
 from app.dependencies import get_database, get_scheduler
 
+logging.basicConfig(
+    level=logging.INFO,  # Change to DEBUG if you need more verbosity
+    format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
+    handlers=[logging.StreamHandler(sys.stdout)]
+)
 
 app_logger = logging.getLogger("app")
-if not app_logger.handlers:
-    stream_handler = logging.StreamHandler()
-    stream_handler.setFormatter(
-        logging.Formatter(
-            "%(asctime)s | %(levelname)s | %(name)s | %(message)s"
-        )
-    )
-    app_logger.addHandler(stream_handler)
-app_logger.setLevel(logging.INFO)
-app_logger.propagate = False
+
+# Prevent APScheduler from being too noisy (optional but recommended)
+logging.getLogger("apscheduler").setLevel(logging.WARNING)
 
 load_dotenv(dotenv_path=Path(__file__).resolve().parents[1] / ".env")
 
@@ -33,6 +33,7 @@ load_dotenv(dotenv_path=Path(__file__).resolve().parents[1] / ".env")
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Initialise SQLite Database
+    app_logger.info("Starting up Zoe...")
     database = get_database()
     database.init()
 

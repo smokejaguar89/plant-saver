@@ -20,10 +20,11 @@ TEMPERATURE_COMFORT_C_UPPER_THRESHOLD = 27.0
 
 class SensorService:
     def __init__(
-            self,
-            bme280: HardwareDriverProtocol[BME280Reading],
-            tsl2591: HardwareDriverProtocol[TSL2591Reading],
-            soil_moisture: HardwareDriverProtocol[SoilMoistureReading]):
+        self,
+        bme280: HardwareDriverProtocol[BME280Reading],
+        tsl2591: HardwareDriverProtocol[TSL2591Reading],
+        soil_moisture: HardwareDriverProtocol[SoilMoistureReading],
+    ):
         self.bme280 = bme280
         self.tsl2591 = tsl2591
         self.soil_moisture = soil_moisture

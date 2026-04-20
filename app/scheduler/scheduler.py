@@ -12,6 +12,13 @@ scheduler = BackgroundScheduler()
 logger = logging.getLogger(__name__)
 RETRY_DELAY_MINUTES = 5
 RETRY_JOB_ID = "generate_image_retry"
+IMAGE_GEN_CRON_SCHEDULE = [
+    6,  # Clara awake
+    10,  # Nick prooooobably awake
+    14,  # Lunch time
+    18,  # Evening, hopefully home (or out, living life)
+    22,  # Night time, maybe one last image before bed
+]
 
 
 class Scheduler:
@@ -63,13 +70,6 @@ class Scheduler:
         # scheduler.add_job(self._run_generate_image_job, "interval",
         #                   minutes=1)
 
-        IMAGE_GEN_CRON_SCHEDULE = [
-            6,  # Clara awake
-            10,  # Nick prooooobably awake
-            14,  # Lunch time
-            18,  # Evening, hopefully home (or out, living life)
-            22,  # Night time, maybe one last image before bed
-        ]
         scheduler.add_job(
             self._run_generate_image_job,
             "cron",
