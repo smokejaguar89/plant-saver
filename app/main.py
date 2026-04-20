@@ -14,7 +14,7 @@ from app.dependencies import get_database, get_scheduler
 logging.basicConfig(
     level=logging.INFO,  # Change to DEBUG if you need more verbosity
     format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
-    handlers=[logging.StreamHandler(sys.stdout)]
+    handlers=[logging.StreamHandler(sys.stdout)],
 )
 
 app_logger = logging.getLogger("app")

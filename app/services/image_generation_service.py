@@ -6,6 +6,7 @@ import logging
 from pathlib import Path
 from typing import Optional
 from enum import Enum
+from PIL import Image
 
 from app.db.database import Database
 from app.clients.client_protocols import ImageClient
@@ -157,6 +158,12 @@ class ImageGenerationService:
     GENERATED_IMAGE_DIR = (
         Path(__file__).resolve().parents[1] / "static" / "img" / "gemini"
     )
+    OPTIMISED_IMAGE_DIR = (
+        Path(__file__).resolve().parents[1]
+        / "static"
+        / "img"
+        / "gemini_optimised"
+    )
 
     def __init__(
         self,
@@ -173,6 +180,7 @@ class ImageGenerationService:
         self.open_meteo_client = open_meteo_client
         self.base_image_path = self.BASE_IMAGE_PATH
         self.generated_image_dir = self.GENERATED_IMAGE_DIR
+        self.optimised_image_dir = self.OPTIMISED_IMAGE_DIR
         self._prompt_builder = _ImagePromptBuilder()
 
     async def generate_and_save_image(self) -> Path:
@@ -195,7 +203,13 @@ class ImageGenerationService:
             base_image_bytes=base_image_bytes,
         )
         generated_at = datetime.now()
-        output_path = self._write_generated_image(image_bytes, generated_at)
+        output_path = self._write_generated_image(
+            image_bytes, generated_at, self.generated_image_dir
+        )
+        # For e-ink display
+        self._write_optimised_image(
+            output_path, self.optimised_image_dir / output_path.name
+        )
         await self.database.save_generated_image_metadata(
             filename=output_path.name,
             prompt=prompt,
@@ -222,15 +236,23 @@ class ImageGenerationService:
         )
 
     def _write_generated_image(
-        self,
-        image_bytes: bytes,
-        generated_at: datetime,
+        self, image_bytes: bytes, generated_at: datetime, path: Path
     ) -> Path:
-        self.generated_image_dir.mkdir(parents=True, exist_ok=True)
+        path.mkdir(parents=True, exist_ok=True)
         filename = f"sunflower_{self._timestamp_to_string(generated_at)}_P.jpg"
-        output_path = self.generated_image_dir / filename
+        output_path = path / filename
         output_path.write_bytes(image_bytes)
         return output_path
 
+    def _write_optimised_image(
+        self, input_path: Path, output_path: Path
+    ) -> Path:
+        TARGET_RES = (1200, 1600)
+        with Image.open(input_path) as img:
+            # Resize down slightly first
+            img = img.resize(TARGET_RES, Image.Resampling.LANCZOS)
+            img.save(output_path, "JPEG", quality=70, optimize=True)
+        return output_path
+
     def _timestamp_to_string(self, value: datetime) -> str:
-        return value.strftime("%Y-%m-%d:%H:%M")
+        return value.strftime("%Y_%m_%d_%H_%M")

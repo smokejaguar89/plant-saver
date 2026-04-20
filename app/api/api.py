@@ -1,12 +1,13 @@
-from pathlib import Path
 import logging
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Response, status
-from fastapi.responses import FileResponse
-import httpx
-import requests
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    Response,
+    status,
+)
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
-import asyncio
 
 from app.models.dto.get_sensor_data_response import GetSensorDataResponse
 from app.models.dto.get_eink_pull_response import (
@@ -85,14 +86,13 @@ async def get_eink_pull(
             status=204,
             message="No image available",
             data=GetEinkPullResponseData(
-                    next_cron_time=next_pull_time.strftime(
-                        "%Y-%m-%dT%H:%M:%SZ"),
-                    image_url=None,
-            )
+                next_cron_time=next_pull_time.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                image_url=None,
+            ),
         )
 
     RASPBERRY_PI_DOMAIN = "http://192.168.86.26:8000"
-    file_path = f"{RASPBERRY_PI_DOMAIN}/static/img/gemini/{metadata.filename}"
+    file_path = f"{RASPBERRY_PI_DOMAIN}/static/img/gemini_optimised/{metadata.filename}"
 
     logger.info("Getting image at %s.", file_path)
 
@@ -104,7 +104,7 @@ async def get_eink_pull(
         data=GetEinkPullResponseData(
             next_cron_time=next_pull_time.strftime("%Y-%m-%dT%H:%M:%SZ"),
             image_url=file_path,
-        )
+        ),
     )
 
 

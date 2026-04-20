@@ -25,6 +25,7 @@ env/
 
 # --- Generated Gemini images ---
 app/static/img/gemini/*.jpg
+app/static/img/gemini_optimised/*.jpg
 
 # --- Local databases / runtime files ---
 *.db
