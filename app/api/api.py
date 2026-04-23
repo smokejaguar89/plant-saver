@@ -74,8 +74,7 @@ async def get_time_series(
 @router.get("/images/eink_signal", response_model=GetEinkSignalResponse)
 async def get_eink_signal():
     return GetEinkSignalResponse(
-        status=status.HTTP_200_OK,
-        message="Feedback recorded"
+        status=status.HTTP_200_OK, message="Feedback recorded"
     )
 
 
