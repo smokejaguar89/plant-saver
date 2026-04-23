@@ -47,6 +47,8 @@ class Scheduler:
     def _run_generate_image_job(self):
         try:
             asyncio.run(self._generate_image_job())
+        # TODO: add maximum retries to prevent race condition and also going
+        #       totally broke.
         except Exception:
             logger.exception(
                 "Image generation job failed. Scheduling retry in %d minutes.",

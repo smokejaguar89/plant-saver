@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 from pydantic import BaseModel
 from typing import Optional
 
@@ -8,7 +10,7 @@ class GetEinkPullResponseData(BaseModel):
 
 
 class GetEinkPullResponse(BaseModel):
-    status: int
+    status: HTTPStatus
     type: Optional[str]
     message: str
     data: GetEinkPullResponseData

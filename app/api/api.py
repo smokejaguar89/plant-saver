@@ -14,6 +14,7 @@ from app.models.dto.get_eink_pull_response import (
     GetEinkPullResponse,
     GetEinkPullResponseData,
 )
+from app.models.dto.get_eink_signal_response import GetEinkSignalResponse
 from app.models.dto.get_time_series_response import (
     GetTimeSeriesResponse,
     SensorSnapshotDto,
@@ -70,6 +71,14 @@ async def get_time_series(
     return GetTimeSeriesResponse(snapshots=snapshot_dtos)
 
 
+@router.get("/images/eink_signal", response_model=GetEinkSignalResponse)
+async def get_eink_signal():
+    return GetEinkSignalResponse(
+        status=status.HTTP_200_OK,
+        message="Feedback recorded"
+    )
+
+
 @router.get("/images/eink_pull", response_model=GetEinkPullResponse)
 async def get_eink_pull(
     response: Response,
@@ -82,23 +91,24 @@ async def get_eink_pull(
 
     if not metadata:
         response.status_code = status.HTTP_204_NO_CONTENT
-        return GetEinkPullResponse(
-            status=204,
+        pull_response = GetEinkPullResponse(
+            status=status.HTTP_204_NO_CONTENT,
             message="No image available",
             data=GetEinkPullResponseData(
                 next_cron_time=next_pull_time.strftime("%Y-%m-%dT%H:%M:%SZ"),
                 image_url=None,
             ),
         )
+        logger.info("Failed: %s", pull_response)
+        return pull_response
 
     RASPBERRY_PI_DOMAIN = "http://192.168.86.26:8000"
     file_path = f"{RASPBERRY_PI_DOMAIN}/static/img/gemini_optimised/{metadata.filename}"
 
     logger.info("Getting image at %s.", file_path)
 
-    response.status_code = status.HTTP_200_OK
-    return GetEinkPullResponse(
-        status=200,
+    pull_response = GetEinkPullResponse(
+        status=status.HTTP_200_OK,
         type="SHOW",
         message="Image retrieved successfully",
         data=GetEinkPullResponseData(
@@ -106,6 +116,8 @@ async def get_eink_pull(
             image_url=file_path,
         ),
     )
+    logger.info("Success: %s", pull_response)
+    return pull_response
 
 
 async def get_next_pull_time() -> datetime:
