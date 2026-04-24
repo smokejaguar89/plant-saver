@@ -58,11 +58,15 @@ def test_get_latest_generated_image_returns_database_value() -> None:
     database.get_latest_generated_image_metadata.assert_awaited_once_with()
 
 
+@patch.object(
+    ImageGenerationService, "_write_optimised_image", return_value=None
+)
 @patch("app.services.image_generation_service.random.random", return_value=0.9)
 @patch("app.services.image_generation_service.datetime")
 def test_generate_and_save_image_uses_exact_healthy_prompt(
     mock_datetime,
     _mock_random,
+    _mock_write_optimised,
 ) -> None:
     # Arrange
     snapshot = SensorSnapshot(
@@ -124,11 +128,15 @@ def test_generate_and_save_image_uses_exact_healthy_prompt(
     )
 
 
+@patch.object(
+    ImageGenerationService, "_write_optimised_image", return_value=None
+)
 @patch("app.services.image_generation_service.random.random", return_value=0.9)
 @patch("app.services.image_generation_service.datetime")
 def test_generate_and_save_image_uses_exact_stressed_prompt(
     mock_datetime,
     _mock_random,
+    _mock_write_optimised,
 ) -> None:
     # Arrange
     snapshot = SensorSnapshot(

@@ -79,8 +79,8 @@ def test_eink_pull_returns_200_with_valid_image(
 
     # Assert
     assert response.status_code == 200
-    assert response.headers["content-type"] == "image/jpeg"
-    assert response.content == b"fake JPG content"
+    assert response.headers["content-type"] == "application/json"
+    assert response.json()["data"]["image_url"] is not None
 
 
 def test_eink_pull_calls_image_service(
@@ -108,7 +108,7 @@ def test_eink_pull_calls_image_service(
 def test_eink_pull_has_correct_media_type_header(
     client, image_service_mock, gemini_image_dir
 ):
-    """Test that eink_pull response has image/jpeg media type."""
+    """Test that eink_pull response has application/json media type."""
     gemini_dir, image_path = gemini_image_dir
 
     # Arrange
@@ -123,13 +123,13 @@ def test_eink_pull_has_correct_media_type_header(
     response = client.get("/api/images/eink_pull")
 
     # Assert
-    assert response.headers["content-type"] == "image/jpeg"
+    assert response.headers["content-type"] == "application/json"
 
 
 def test_eink_pull_returns_file_with_correct_filename(
     client, image_service_mock, gemini_image_dir
 ):
-    """Test that eink_pull response includes correct filename."""
+    """Test that eink_pull response includes correct filename in URL."""
     gemini_dir, image_path = gemini_image_dir
 
     # Arrange
@@ -145,7 +145,7 @@ def test_eink_pull_returns_file_with_correct_filename(
 
     # Assert
     assert response.status_code == 200
-    assert "test_image.jpg" in response.headers.get("content-disposition", "")
+    assert "test_image.jpg" in response.json()["data"]["image_url"]
 
 
 def test_eink_pull_has_correct_route_path(app):

@@ -157,7 +157,8 @@ def test_eink_pull_returns_jpg_file() -> None:
 
         # Assert
         assert response.status_code == 200
-        assert response.headers["content-type"] == "image/jpeg"
+        assert response.headers["content-type"] == "application/json"
+        assert "image_url" in response.json()["data"]
     finally:
         # Cleanup
         if test_image_path.exists():
